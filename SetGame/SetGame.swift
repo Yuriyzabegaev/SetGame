@@ -53,7 +53,10 @@ class SetGame {
     
     private(set) var cardsOnTable = Set<Card>()
     private(set) var chosenCardsOnTable: [Card] = []
-
+    private var foundSet:[Card] = []
+    var setIsFound:Bool {
+        return foundSet.count > 0
+    }
     private(set) var gameIsFinished = false
 
     init() {
@@ -84,7 +87,7 @@ class SetGame {
         gameIsFinished = false
     }
     
-    func openThreeNewCard() {
+    func openThreeNewCards() {
         openNewCards(amount: 3)
     }
     
@@ -108,6 +111,16 @@ class SetGame {
         if chosenCardsOnTable.count == 3 {
             handleThreeOpenCardsSituation()
         }
+        
+        findSet()
+    }
+    
+    func giveAHintSet() -> [Card]? {
+        score -= 10
+        if setIsFound {
+            return foundSet
+        }
+        return nil
     }
     
     private func openNewCards(amount : Int) {
@@ -121,6 +134,7 @@ class SetGame {
                 gameIsFinished = true
             }
         }
+        findSet()
     }
     
     private func handleThreeOpenCardsSituation() {
@@ -142,4 +156,23 @@ class SetGame {
             Int.eachOfThreeOrNoneIsEqual($0.texture.rawValue, $1.texture.rawValue, $2.texture.rawValue) &&
             Int.eachOfThreeOrNoneIsEqual($0.color.rawValue, $1.color.rawValue, $2.color.rawValue)
     }
+    
+    private func findSet() {
+        let shuffledCards = Array(cardsOnTable).shuffled()
+        foundSet = []
+        for indexA in shuffledCards.indices {
+            for indexB in shuffledCards.indices {
+                for indexC in shuffledCards.indices {
+                    if indexA != indexB && indexB != indexC && indexC != indexA {
+                        let (cardA, cardB, cardC) = (shuffledCards[indexA], shuffledCards[indexB], shuffledCards[indexC])
+                        if eachOfThreeCardsOrNoneIsEqual(cardA, cardB, cardC) {
+                            foundSet = [cardA, cardB, cardC]
+                            break
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 }

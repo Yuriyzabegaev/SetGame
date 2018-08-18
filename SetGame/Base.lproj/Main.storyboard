@@ -347,6 +347,14 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O2U-cW-eK5">
+                                <rect key="frame" x="309" y="642" width="37" height="36"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="20"/>
+                                <state key="normal" title="Hint"/>
+                                <connections>
+                                    <action selector="giveHint" destination="BYZ-38-t0r" eventType="touchUpInside" id="sr0-Jn-GTa"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="0.8666666666666667" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -357,6 +365,7 @@
                             <constraint firstItem="HON-sT-wbt" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="XCn-RS-Ql4"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="z8e-2S-Q7f" secondAttribute="bottom" constant="58" id="faI-gx-URw"/>
                             <constraint firstItem="w6h-H2-I0h" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="gwI-md-hcQ"/>
+                            <constraint firstItem="z8e-2S-Q7f" firstAttribute="bottom" secondItem="O2U-cW-eK5" secondAttribute="bottom" id="kJM-xP-MSm"/>
                             <constraint firstItem="w6h-H2-I0h" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="16" id="u3W-Sx-PQW"/>
                             <constraint firstItem="HON-sT-wbt" firstAttribute="top" secondItem="w6h-H2-I0h" secondAttribute="bottom" constant="30" id="wkB-Wb-CVA"/>
                         </constraints>
@@ -370,7 +379,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-79.200000000000003" y="133.5832083958021"/>
+            <point key="canvasLocation" x="-79.710144927536234" y="132.88043478260872"/>
         </scene>
     </scenes>
 </document>

@@ -39,13 +39,25 @@ class ViewController: UIViewController {
         updateGameUI()
     }
     
+    @IBAction func giveHint() {
+        cleanCompletedCards()
+        updateGameUI()
+        if game.setIsFound {
+            for card in game.giveAHintSet()! {
+                applyToOneCard(card) { uiCard in
+                    uiCard.backgroundColor = #colorLiteral(red: 0.9607843161, green: 0.7058823705, blue: 0.200000003, alpha: 1)
+                }
+            }
+        }
+    }
+    
     @IBOutlet weak var openCardsButton: UIButton!
     @IBAction func openThreeMoreCards(_ sender: UIButton) {
         assert(cardsOnTable.compactMap { $0 }.count <= maxCardsOnTable - 3, "ViewController.openThreeMoreCards(_ sender: UIButton) --- more then \(maxCardsOnTable - 3) is already open")
         if !uiCardsToBeHiddenInANextTouch.isEmpty {
             cleanCompletedCards()
         }
-        game.openThreeNewCard()
+        game.openThreeNewCards()
         updateGameUI()
     }
     
@@ -68,7 +80,7 @@ class ViewController: UIViewController {
         let shouldOpenNewCards = !uiCardsToBeHiddenInANextTouch.isEmpty
         cleanCompletedCards()
         if shouldOpenNewCards {
-            game.openThreeNewCard()
+            game.openThreeNewCards()
         }
         
         for card in game.cardsOnTable {
