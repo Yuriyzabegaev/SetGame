@@ -165,6 +165,9 @@ class SetGame {
                 for indexC in shuffledCards.indices {
                     if indexA != indexB && indexB != indexC && indexC != indexA {
                         let (cardA, cardB, cardC) = (shuffledCards[indexA], shuffledCards[indexB], shuffledCards[indexC])
+                        if cardA.isCompleted || cardB.isCompleted || cardC.isCompleted {
+                            continue
+                        }
                         if eachOfThreeCardsOrNoneIsEqual(cardA, cardB, cardC) {
                             foundSet = [cardA, cardB, cardC]
                             break

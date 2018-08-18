@@ -30,6 +30,17 @@ class ViewController: UIViewController {
     
     @IBAction func startNewGame() {
         game.startNewGame()
+        cardsOnTable = [Card?](repeating: nil, count: maxCardsOnTable)
+        uiCardsToBeHiddenInANextTouch = [:]
+        tagFactory = 0
+        applyToEachCard { uiCard in
+            uiCard.isHidden = true
+            uiCard.tag = tagFactory
+            uiCard.layer.cornerRadius = 8.0
+            uiCard.layer.borderWidth = 2.0
+            uiCard.layer.borderColor = #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)
+            uiCard.setTitle("", for: .normal)
+        }
         updateGameUI()
     }
     @IBOutlet weak var score: UILabel!
@@ -49,6 +60,7 @@ class ViewController: UIViewController {
                 }
             }
         }
+        updateScore()
     }
     
     @IBOutlet weak var openCardsButton: UIButton!
@@ -62,18 +74,7 @@ class ViewController: UIViewController {
     }
     
     override func viewDidLoad() {
-        game.startNewGame()
-//        let card = game.cardsOnTable.first!
-        tagFactory = 0
-        applyToEachCard { uiCard in
-            uiCard.isHidden = true
-            uiCard.tag = tagFactory
-            uiCard.layer.cornerRadius = 8.0
-            uiCard.layer.borderWidth = 2.0
-            uiCard.layer.borderColor = #colorLiteral(red: 0.2588235438, green: 0.7568627596, blue: 0.9686274529, alpha: 1)
-            uiCard.setTitle("", for: .normal)
-        }
-        updateGameUI()
+        startNewGame()
     }
     
     private func updateGameUI() {
@@ -112,7 +113,7 @@ class ViewController: UIViewController {
                 }
             }
         }
-        score.text = "Score: \(game.score)"
+        updateScore()
         openCardsButton.isHidden = cardsOnTable.compactMap { $0 }.count > maxCardsOnTable - 3 ||
             game.amountOfCardsInDeck < 3
     }
@@ -150,6 +151,10 @@ class ViewController: UIViewController {
             cardsOnTable[index] = nil
             uiCardsToBeHiddenInANextTouch.removeValue(forKey: index)
         }
+    }
+    
+    private func updateScore() {
+        score.text = "Score: \(game.score)"
     }
 }
 

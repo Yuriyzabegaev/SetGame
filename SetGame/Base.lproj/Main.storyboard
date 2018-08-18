@@ -347,8 +347,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" ambiguous="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O2U-cW-eK5">
-                                <rect key="frame" x="309" y="642" width="37" height="36"/>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="O2U-cW-eK5">
+                                <rect key="frame" x="345" y="642" width="37" height="36"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="20"/>
                                 <state key="normal" title="Hint"/>
                                 <connections>
@@ -360,6 +360,7 @@
                         <constraints>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="w6h-H2-I0h" secondAttribute="trailing" constant="16" id="AuN-iZ-JHL"/>
                             <constraint firstItem="z8e-2S-Q7f" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="FxR-qC-Eni"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="O2U-cW-eK5" secondAttribute="trailing" constant="32" id="Hx4-sh-wAD"/>
                             <constraint firstItem="GTn-CE-lrp" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="Mxu-sc-g9F"/>
                             <constraint firstItem="z8e-2S-Q7f" firstAttribute="top" secondItem="GTn-CE-lrp" secondAttribute="bottom" constant="25" id="RaH-tI-giK"/>
                             <constraint firstItem="HON-sT-wbt" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="XCn-RS-Ql4"/>
