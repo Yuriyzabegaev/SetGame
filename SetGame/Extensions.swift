@@ -38,3 +38,34 @@ extension Equatable {
         return eachOfThreeIsEqual(a, b, c) || noneOfThreeIsEqual(a, b, c)
     }
 }
+
+extension UICard {
+    enum State {
+        case chosen
+        case notChosen
+        case hinted
+        case succeeded
+    }
+    
+    enum Symbol {
+        case squiggles
+        case oval
+        case diamonds
+    }
+    
+    enum Amount: Int {
+        case one = 1
+        case two = 2
+        case three = 3
+    }
+    enum Texture {
+        case filled
+        case striped
+        case stroken
+    }
+    enum Color {
+        case green
+        case red
+        case purple
+    }
+}

@@ -2,7 +2,7 @@
 //  SetGame.swift
 //  SetGame
 //
-//  Created by Юрий Забегаев on 17.08.2018.
+//  Created by Юрий Забегаев on 20.08.2018.
 //  Copyright © 2018 Юрий Забегаев. All rights reserved.
 //
 
@@ -10,21 +10,42 @@ import Foundation
 
 
 class Card : Hashable {
+    
     static func == (lhs: Card, rhs: Card) -> Bool {
         return lhs.hashValue == rhs.hashValue
     }
     
-    var isCompleted = false
-    var isChosen : Bool {
-        return Card.checkIfChosen(self)
+    enum CardState {
+        case inDeck
+        case onTable
+        case isChosen
+        case isCompleted
     }
-    static var checkIfChosen : ((Card) -> Bool)!
+    
+    var state: CardState = .inDeck {
+        willSet {
+            switch newValue {
+            case .onTable:
+                Card.cardWillAppearOnTable(self)
+            case .isChosen:
+                Card.cardWillBecomeChosen(self)
+            case .isCompleted:
+                Card.cardWillBecomeCompleten(self)
+            default:
+                fatalError()
+            }
+        }
+    }
+    
+    static var cardWillAppearOnTable: ((Card) -> ())!
+    static var cardWillBecomeChosen: ((Card) -> ())!
+    static var cardWillBecomeCompleten: ((Card) -> ())!
     
     let symbol:Symbol
     let amount:SymbolsAmount
     let texture:SymbolsTexture
     let color:SymbolsColor
-
+    
     let hashValue: Int
     
     init(symbol: Symbol,
@@ -41,76 +62,141 @@ class Card : Hashable {
 
 
 class SetGame {
-    private var deck: [Card] = []
-    var amountOfCardsInDeck: Int {
-        return deck.count
+    
+    private class CardKeep {
+        
+        private(set) var deck: [Card] = []
+        private(set) var table = Set<Card>()
+        private(set) var chosenCards: [Card] = []
+        private(set) var competeCards: [Card] = []
+        var game :SetGame!
+        
+        init() {
+            Card.cardWillBecomeChosen = { [unowned self] card in
+                guard card.state == .onTable else {
+                    fatalError()
+                }
+                self.chosenCards += [card]
+            }
+            
+            Card.cardWillAppearOnTable = { [unowned self] card in
+                guard card.state == .inDeck || card.state == .isChosen else {
+                    fatalError()
+                }
+                
+                if let index = self.chosenCards.index(of: card) {
+                    self.chosenCards.remove(at: index)
+                }
+                self.table.insert(card)
+            }
+            
+            Card.cardWillBecomeCompleten = { [unowned self] card in
+                guard card.state == .isChosen || card.state == .onTable else {
+                    fatalError()
+                }
+                if let index = self.chosenCards.index(of: card) {
+                    self.chosenCards.remove(at: index)
+                }
+            }
+        }
+        
+        func reset() {
+            deck = []
+            table = []
+            chosenCards = []
+            competeCards = []
+            for symbol in Symbol.all() {
+                for amount in SymbolsAmount.all() {
+                    for texture in SymbolsTexture.all() {
+                        for color in SymbolsColor.all() {
+                            deck += [Card(symbol: symbol, amount: amount, texture: texture, color: color)]
+                        }
+                    }
+                }
+            }
+            deck.shuffle()
+        }
+        
+        func openNewCards(amount: Int) {
+            var cardsToOpen = amount
+            assert(amount > 0)
+            if deck.count < amount {
+                cardsToOpen = deck.count
+            }
+            for _ in 0..<cardsToOpen {
+                if let newCard = deck.popLast() {
+                    newCard.state = .onTable
+                }
+            }
+            if deck.count == 0 {
+                game.isFinished = true
+            }
+        }
+        
+        func emptyChosenCards() {
+            for card in chosenCards {
+                card.state = .onTable
+            }
+        }
     }
-    private(set) var score = 0 {
+
+    init() {
+        cardKeep = CardKeep()
+        cardKeep.game = self
+    }
+    
+    private let cardKeep: CardKeep
+    private var foundSet: [Card] = []
+    var cardsOnTable: Set<Card> {
+        return cardKeep.table
+    }
+    var score: Int = 0 {
         didSet {
             score = score < 0 ? 0 : score
         }
     }
-    
-    private(set) var cardsOnTable = Set<Card>()
-    private(set) var chosenCardsOnTable: [Card] = []
-    private var foundSet:[Card] = []
+    var isFinished = false
     var setIsFound:Bool {
         return foundSet.count > 0
-    }
-    private(set) var gameIsFinished = false
-
-    init() {
-        Card.checkIfChosen = { [unowned self] cardToCheck in
-            return !self.chosenCardsOnTable.filter {$0 == cardToCheck}.isEmpty
-        }
     }
     
     func startNewGame() {
         score = 0
-        deck = []
-        cardsOnTable = []
-        chosenCardsOnTable = []
-        for symbolIndex in 0..<3 {
-            for amountIndex in 0..<3 {
-                for textureIndex in 0..<3 {
-                    for colorIndex in 0..<3 {
-                        deck += [Card(symbol: Symbol.init(rawValue: symbolIndex)!,
-                                     amount: SymbolsAmount.init(rawValue: amountIndex)!,
-                                     texture: SymbolsTexture.init(rawValue: textureIndex)!,
-                                     color: SymbolsColor.init(rawValue: colorIndex)!)]
-                    }
-                }
-            }
-        }
-        deck.shuffle()
-        openNewCards(amount: 12)
-        gameIsFinished = false
-    }
-    
-    func openThreeNewCards() {
-        openNewCards(amount: 3)
+        cardKeep.reset()
+        cardKeep.openNewCards(amount: 12)
+        isFinished = false
+        findSet()
     }
     
     func chooseCard(_ card: Card) {
-        assert(cardsOnTable.contains {
-            $0 == card
-        })
-        guard chosenCardsOnTable.count <= 3 else { return }
-        if card.isChosen {
-            if chosenCardsOnTable.count < 3 {
-                chosenCardsOnTable.remove(at: chosenCardsOnTable.index(of: card)!)
-                score -= 1
-            }
-            return
-        }
-        if chosenCardsOnTable.count == 3 {
-            chosenCardsOnTable = []
+        assert(card.state != .inDeck)
+        guard cardKeep.chosenCards.count <= 3 else { return }
+        
+        if cardKeep.chosenCards.count == 3 {
+            cardKeep.emptyChosenCards()
         }
         
-        chosenCardsOnTable += [card]
-        if chosenCardsOnTable.count == 3 {
+        switch card.state {
+        case .onTable:
+            card.state = .isChosen
+        case .isChosen:
+            card.state = .onTable
+            score -= 1
+        case .isCompleted:
+            ()
+        default:
+            fatalError()
+        }
+        
+        if cardKeep.chosenCards.count == 3 {
             handleThreeOpenCardsSituation()
         }
+        
+        findSet()
+    }
+    
+    func openThreeNewCards() {
+        cardKeep.openNewCards(amount: 3)
         
         findSet()
     }
@@ -123,33 +209,19 @@ class SetGame {
         return nil
     }
     
-    private func openNewCards(amount : Int) {
-        assert(amount > 0)
-        
-        for _ in 1...amount {
-            if let newCard = deck.popLast() {
-                cardsOnTable.insert(newCard)
-            } else {
-                // no cards left on deck
-                gameIsFinished = true
-            }
-        }
-        findSet()
-    }
-    
     private func handleThreeOpenCardsSituation() {
-        assert(chosenCardsOnTable.count == 3)
-
-        if eachOfThreeCardsOrNoneIsEqual(chosenCardsOnTable[0], chosenCardsOnTable[1], chosenCardsOnTable[2]) {
-            for (_, card) in chosenCardsOnTable.enumerated() {
-                card.isCompleted = true
+        assert(cardKeep.chosenCards.count == 3)
+        
+        if eachOfThreeCardsOrNoneIsEqual(cardKeep.chosenCards[0], cardKeep.chosenCards[1], cardKeep.chosenCards[2]) {
+            for card in cardKeep.chosenCards {
+                card.state = .isCompleted
             }
             score += 3
         } else {
             score -= 5
         }
     }
-
+    
     private var eachOfThreeCardsOrNoneIsEqual: (Card, Card, Card) -> Bool = {
         Int.eachOfThreeOrNoneIsEqual($0.amount.rawValue, $1.amount.rawValue, $2.amount.rawValue) &&
             Int.eachOfThreeOrNoneIsEqual($0.symbol.rawValue, $1.symbol.rawValue, $2.symbol.rawValue) &&
@@ -158,23 +230,23 @@ class SetGame {
     }
     
     private func findSet() {
-        let shuffledCards = Array(cardsOnTable).shuffled()
+        let shuffledCards = cardKeep.table.filter {$0.state != .isCompleted}.shuffled()
         foundSet = []
         for indexA in shuffledCards.indices {
             for indexB in shuffledCards.indices {
                 for indexC in shuffledCards.indices {
                     if indexA != indexB && indexB != indexC && indexC != indexA {
                         let (cardA, cardB, cardC) = (shuffledCards[indexA], shuffledCards[indexB], shuffledCards[indexC])
-                        if cardA.isCompleted || cardB.isCompleted || cardC.isCompleted {
-                            continue
-                        }
                         if eachOfThreeCardsOrNoneIsEqual(cardA, cardB, cardC) {
                             foundSet = [cardA, cardB, cardC]
-                            break
+                            return
                         }
                     }
                 }
             }
+        }
+        if foundSet.isEmpty && cardKeep.deck.isEmpty {
+            isFinished = true
         }
     }
     
