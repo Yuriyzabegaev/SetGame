@@ -9,6 +9,7 @@
 import UIKit
 
 
+@IBDesignable
 class UICardsHolder: UIView {
 
     private var grid: Grid!
@@ -17,18 +18,22 @@ class UICardsHolder: UIView {
             grid.cellCount = cards.count
         }
     }
+    private var positionsOfCards = [Bool].init(repeating: false, count: 24)
     
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setProps()
+    }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
-        grid = Grid(layout: .aspectRatio(3/4), frame: bounds)
-        isOpaque = false
-        backgroundColor = .clear
+        setProps()
     }
     
     
     func removeCard(_ card:UICard) {
-        if let index = cards.index(of: card) {  
+        if let index = cards.index(of: card) {
+            positionsOfCards[card.position!] = false
             cards.remove(at: index)
             card.removeFromSuperview()
             setNeedsDisplay()
@@ -77,9 +82,37 @@ class UICardsHolder: UIView {
     override func draw(_ rect: CGRect) {
         grid.frame = bounds
     
-        for (index, card) in cards.enumerated() {
+        for card in cards {
+            let index = getCardPosition(of: card)
             card.frame = grid[index]!
         }
+    }
+    
+    
+    private func setProps() {
+        grid = Grid(layout: .aspectRatio(3/4), frame: bounds)
+        isOpaque = false
+        backgroundColor = .clear
+    }
+    
+    private func getCardPosition(of card:UICard) -> Int {
+        
+        // Card has position
+        if let position = card.position {
+            return position
+        }
+        
+        // There is an empty position in array of positions
+        if let firstEmptyIndex = positionsOfCards.index(of: false) {
+            positionsOfCards[firstEmptyIndex] = true
+            card.position = firstEmptyIndex
+            return firstEmptyIndex
+        }
+        
+        // No empty positions => allocate new space in array
+        positionsOfCards.append(false)
+        card.position = positionsOfCards.endIndex - 1
+        return card.position!
     }
     
 }

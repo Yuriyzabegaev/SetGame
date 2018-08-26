@@ -98,8 +98,10 @@ extension UICard {
 }
 
 
+@IBDesignable
 class UICard: UIView {
     
+    var position: Int?
     var state: State = .notChosen
     private(set) var amount: Amount = .one
     private(set) var color: Color = .purple
