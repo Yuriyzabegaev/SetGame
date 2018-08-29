@@ -49,14 +49,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		0B8948692137013100969024 /* UI */ = {
+		0B8948692137013100969024 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				0B89486C2137013D00969024 /* UICard.swift */,
 				0B89486B2137013D00969024 /* UICardsHolder.swift */,
 				0B89486A2137013D00969024 /* UIDeck.swift */,
 			);
-			path = UI;
+			path = Views;
 			sourceTree = "<group>";
 		};
 		0BA7D31A21275BBF00F7B641 = {
@@ -78,7 +78,7 @@
 		0BA7D32521275BC000F7B641 /* SetGame */ = {
 			isa = PBXGroup;
 			children = (
-				0B8948692137013100969024 /* UI */,
+				0B8948692137013100969024 /* Views */,
 				0B61B891212AB5A20017DF93 /* Grid.swift */,
 				0BA7D32621275BC000F7B641 /* AppDelegate.swift */,
 				0BA7D32821275BC000F7B641 /* ViewController.swift */,

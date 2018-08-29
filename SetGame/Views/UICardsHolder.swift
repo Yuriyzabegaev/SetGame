@@ -32,32 +32,36 @@ class UICardsHolder: UIView {
     
     
     func removeCard(_ card:UICard) {
-        if let index = cards.index(of: card) {
-            positionsOfCards[card.position!] = false
-            cards.remove(at: index)
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.6,
+            delay: 0,
+            options: [.curveEaseInOut],
+            animations: {
+                card.frame = CGRect(
+                    origin: CGPoint(x: -card.bounds.width,
+                                    y: -card.bounds.height),
+                    size: card.bounds.size)
+                self.positionsOfCards[card.position!] = false
+                self.cards.remove(at: self.cards.index(of: card)!)
+        }) { position in
             card.removeFromSuperview()
-            setNeedsDisplay()
         }
     }
     
     func chooseCard(_ card:UICard) {
         card.state = .chosen
-        card.setNeedsDisplay()
     }
     
     func unchooseCard(_ card:UICard) {
         card.state = .notChosen
-        card.setNeedsDisplay()
     }
     
     func completeCard(_ card:UICard) {
         card.state = .succeeded
-        card.setNeedsDisplay()
     }
     
     func hintCard(_ card:UICard) {
         card.state = .hinted
-        card.setNeedsDisplay()
     }
 
     func addCard(_ card: UICard) {
@@ -82,10 +86,15 @@ class UICardsHolder: UIView {
     override func draw(_ rect: CGRect) {
         grid.frame = bounds
     
-        for card in cards {
-            let index = getCardPosition(of: card)
-            card.frame = grid[index]!
-        }
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.6,
+            delay: 0, options: [.curveEaseInOut],
+            animations: { [unowned self] in
+                for card in self.cards {
+                    let index = self.getCardPosition(of: card)
+                    card.frame = self.grid[index]!
+                }
+        })
     }
     
     

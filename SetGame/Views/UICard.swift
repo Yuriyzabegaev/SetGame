@@ -12,9 +12,12 @@ import UIKit
 extension UICard {
     private class Figure: UIView {
         
+        //MARK: Properties
         private(set) var symbol: Symbol = .squiggles
         private(set) var texture: Texture = .stroken
         
+        
+        //MARK: Initialisation
         init(symbol: Symbol, texture: Texture) {
             (self.symbol, self.texture) = (symbol, texture)
             super.init(frame: .zero)
@@ -25,12 +28,8 @@ extension UICard {
             fatalError("not implemented")
         }
         
-        private func setProperties() {
-            contentMode = .redraw
-            isOpaque = false
-            backgroundColor = .clear
-        }
         
+        //MARK: Overrides
         override func draw(_ rect: CGRect) {
             let figure: UIBezierPath
             
@@ -90,6 +89,14 @@ extension UICard {
             }
         }
         
+        
+        //MARK: Private Methods
+        private func setProperties() {
+            contentMode = .redraw
+            isOpaque = false
+            backgroundColor = .clear
+        }
+        
         private var yOffsetBetweenFigures: CGFloat {
             return bounds.size.height * 0.1
         }
@@ -101,8 +108,13 @@ extension UICard {
 @IBDesignable
 class UICard: UIView {
     
+    //MARK: Properties
     var position: Int?
-    var state: State = .notChosen
+    var state: State = .notChosen {
+        didSet {
+            setNeedsDisplay()
+        }
+    }
     private(set) var amount: Amount = .one
     private(set) var color: Color = .purple
     private(set) var symbol: Symbol = .squiggles
@@ -110,9 +122,11 @@ class UICard: UIView {
     private var figures: [Figure] = []
     private var grid: Grid!
     
-    init(_ cardData: (Amount, Symbol, Texture, Color)) {
+    
+    //MARK: Initialisation
+    init(_ cardData: (Amount, Symbol, Texture, Color), frame: CGRect = .zero) {
         (amount, symbol, texture, color) = cardData
-        super.init(frame: .zero)
+        super.init(frame: frame)
         setProperties()
     }
     
@@ -121,19 +135,8 @@ class UICard: UIView {
         setProperties()
     }
     
-    private func setProperties() {
-        contentMode = .redraw
-        isOpaque = false
-        backgroundColor = .clear
-        
-        for _ in 0...amount.hashValue {
-            let figure = Figure(symbol: symbol, texture: texture)
-            figure.contentMode = .redraw
-            figures += [figure]
-            self.addSubview(figure)
-        }
-    }
     
+    //MARK: Overrides
     override func draw(_ rect: CGRect) {
         grid = Grid(layout: .aspectRatio(figureFrame.size.height/figureFrame.size.width),
                     frame: figuresFrame)
@@ -168,6 +171,21 @@ class UICard: UIView {
             figures[0].frame = grid[0]!
             figures[1].frame = grid[1]!
             figures[2].frame = grid[2]!
+        }
+    }
+    
+    
+    //MARK: Private Methods
+    private func setProperties() {
+        contentMode = .redraw
+        isOpaque = false
+        backgroundColor = .clear
+        
+        for _ in 0...amount.hashValue {
+            let figure = Figure(symbol: symbol, texture: texture)
+            figure.contentMode = .redraw
+            figures += [figure]
+            self.addSubview(figure)
         }
     }
     

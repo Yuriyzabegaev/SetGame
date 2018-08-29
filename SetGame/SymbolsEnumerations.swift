@@ -39,3 +39,42 @@ enum SymbolsColor : Int {
     
     static func all() -> [SymbolsColor] { return [.colorA, .colorB, .colorC] }
 }
+
+
+func getCardUIData(_ card: Card) -> (UICard.Amount, UICard.Symbol,  UICard.Texture, UICard.Color) {
+    let color:UICard.Color, amount:UICard.Amount, texture:UICard.Texture, symbol:UICard.Symbol
+    switch card.amount {
+    case .one:
+        amount = .one
+    case .two:
+        amount = .two
+    case .three:
+        amount = .three
+    }
+    switch card.color {
+    case .colorA:
+        color = .green
+    case .colorB:
+        color = .purple
+    case .colorC:
+        color = .red
+    }
+    switch card.texture {
+    case .textureA:
+        texture = .filled
+    case .textureB:
+        texture = .striped
+    case .textureC:
+        texture = .stroken
+    }
+    switch card.symbol {
+    case .symbolA:
+        symbol = .diamonds
+    case .symbolB:
+        symbol = .oval
+    case .symbolC:
+        symbol = .squiggles
+    }
+    
+    return (amount, symbol, texture, color)
+}
