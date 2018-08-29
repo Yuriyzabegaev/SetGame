@@ -42,6 +42,8 @@ extension ViewController {
         }
         
         
+        func getCardsList() -> [UICard] { return uiCards }
+        
         func makeIterator() -> ViewController.ControllerCardsStorage {
             iterator = cards.startIndex
             return self
@@ -159,6 +161,9 @@ class ViewController: UIViewController {
             let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(swipeDownGesture))
             swipeDown.direction = .down
             cardsHolder.addGestureRecognizer(swipeDown)
+            
+            cardsHolder.getCardsList = cardsStorage.getCardsList
+            cardsHolder.getCardPosition = cardsStorage.getCardPosition
         }
     }
 
