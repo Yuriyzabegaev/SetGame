@@ -147,6 +147,7 @@ class SetGame {
     
     private let cardKeep: CardKeep
     private var foundSet: [Card] = []
+    private(set) var haveSetChosen: Bool = false
     var cardsOnTable: Set<Card> {
         return cardKeep.table
     }
@@ -171,6 +172,7 @@ class SetGame {
     func chooseCard(_ card: Card) {
         assert(card.state != .inDeck)
         guard cardKeep.chosenCards.count <= 3 else { return }
+        haveSetChosen = false
         
         if cardKeep.chosenCards.count == 3 {
             cardKeep.emptyChosenCards()
@@ -216,6 +218,7 @@ class SetGame {
             for card in cardKeep.chosenCards {
                 card.state = .isCompleted
             }
+            haveSetChosen = true
             score += 3
         } else {
             score -= 5

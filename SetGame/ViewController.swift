@@ -20,6 +20,7 @@ extension ViewController {
         private(set) var queueToRemove: [UICard] = []
         private(set) var cards:[Card] = []
         private(set) var uiCards:[UICard] = []
+        private var positionsOfCards = [Bool].init(repeating: false, count: 24)
         typealias Element = (Card, UICard)
         
         init(cardsHolder: UICardsHolder) {
@@ -70,7 +71,7 @@ extension ViewController {
             cards.remove(at: index)
             let uiCardToRemove = uiCards[index]
             uiCards.remove(at: index)
-            cardsHolder.removeCard(uiCardToRemove)
+            uiCardToRemove.removeFromSuperview()
         }
         
         func remove(card: Card) {
@@ -97,8 +98,42 @@ extension ViewController {
         func cleanCompletedCards() {
             for uiCard in queueToRemove {
                 remove(uiCard: uiCard)
+                if let position = uiCard.position {
+                    positionsOfCards[position] = false
+                }
             }
             queueToRemove = []
+        }
+        
+        func getCard(at location:CGPoint) -> UICard? {
+            for card in uiCards {
+                if card.frame.contains(location) { return card }
+            }
+            return nil
+        }
+        
+        func getCardPosition(of card:UICard) -> Int {
+            
+            // Card has position
+            if let position = card.position {
+                return position
+            }
+            
+            // There is an empty position in array of positions
+            if let firstEmptyIndex = positionsOfCards.index(of: false) {
+                positionsOfCards[firstEmptyIndex] = true
+                card.position = firstEmptyIndex
+                return firstEmptyIndex
+            }
+            
+            // No empty positions => allocate new space in array
+            positionsOfCards.append(false)
+            card.position = positionsOfCards.endIndex - 1
+            return card.position!
+        }
+        
+        func shuffleCardsPositions() {
+            fatalError("Not implemented")
         }
         
     }
@@ -134,7 +169,7 @@ class ViewController: UIViewController {
         let currentTime = Date()
         if let lastTimeRotated = lastTimeRotated {
             if currentTime.timeIntervalSince(lastTimeRotated) > 2 {
-                cardsHolder.shuffleCardsOnScreen()
+                cardsStorage.shuffleCardsPositions()
                 self.lastTimeRotated = currentTime
             }
         } else {
@@ -145,7 +180,7 @@ class ViewController: UIViewController {
     @objc func swipeDownGesture() { openThreeMoreCards() }
     
     @objc func tapOnCardGesture(_ gesture: UITapGestureRecognizer) {
-        if let uiCard = cardsHolder.getCard(at: gesture.location(in: cardsHolder)) {
+        if let uiCard = cardsStorage.getCard(at: gesture.location(in: cardsHolder)) {
             let card = cardsStorage[uiCard]!
             game.chooseCard(card)
             updateGameUI()
@@ -160,7 +195,7 @@ class ViewController: UIViewController {
         if game.setIsFound {
             for card in game.giveAHintSet()! {
                 if let uiCard = cardsStorage[card] {
-                    cardsHolder.hintCard(uiCard)
+                    uiCard.state = .hinted
                 }
             }
         }
@@ -189,23 +224,29 @@ class ViewController: UIViewController {
             game.openThreeNewCards()
         }
         
-        /// update cardsKeep by new cards, added to table
-        for card in game.cardsOnTable {
-            if !(card.state == .isCompleted) {
-                updatePosition(ofCard: card)
-            }
+        /// change the grid if needed
+        let notCompletedCardsOnTable = game.cardsOnTable.filter { $0.state != .isCompleted }
+        let countOfNotCompletedCardsOnTable = notCompletedCardsOnTable.count
+        if !game.haveSetChosen, countOfNotCompletedCardsOnTable != cardsHolder.grid.cellCount {
+            cardsHolder.grid.cellCount = countOfNotCompletedCardsOnTable
         }
         
+        /// update cardsKeep by new cards, added to table
+        for card in notCompletedCardsOnTable {
+            updatePosition(ofCard: card)
+        }
+        
+        /// switch state of cards
         for (card, uiCard) in cardsStorage {
             switch card.state {
             case .isCompleted:
                 /// hide it from UI and remove from cardsOnTable in a next touch
                 cardsStorage.addCardToRemoveQueue(uiCard)
-                cardsHolder.completeCard(uiCard)
+                uiCard.state = .succeeded
             case .onTable:
-                cardsHolder.unchooseCard(uiCard)
+                uiCard.state = .notChosen
             case .isChosen:
-                cardsHolder.chooseCard(uiCard)
+                uiCard.state = .chosen
             default:
                 fatalError()
             }
@@ -219,8 +260,9 @@ class ViewController: UIViewController {
         if uiCard == nil {
             uiCard = UICard(getCardUIData(card), frame: deck.frame)
             cardsStorage.add(card: card, uiCard: uiCard!)
-            cardsHolder.addCard(uiCard!)
+            cardsHolder.addSubview(uiCard!)
         }
+        uiCard!.frame = cardsHolder.grid[cardsStorage.getCardPosition(of: uiCard!)]!
     }
     
     private func updateScore() {
