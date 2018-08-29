@@ -114,6 +114,7 @@ class ViewController: UIViewController {
     
     
     //MARK: Outlets
+    @IBOutlet weak var deck: UIDeck!
     @IBOutlet weak var score: UILabel!
     @IBOutlet weak var cardsHolder: UICardsHolder! {
         didSet {

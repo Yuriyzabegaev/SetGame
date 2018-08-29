@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B61B890212AB4040017DF93 /* Card.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B61B88F212AB4040017DF93 /* Card.swift */; };
 		0B61B892212AB5A20017DF93 /* Grid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B61B891212AB5A20017DF93 /* Grid.swift */; };
+		0B89486D2137013D00969024 /* UIDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B89486A2137013D00969024 /* UIDeck.swift */; };
+		0B89486E2137013D00969024 /* UICardsHolder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B89486B2137013D00969024 /* UICardsHolder.swift */; };
+		0B89486F2137013D00969024 /* UICard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B89486C2137013D00969024 /* UICard.swift */; };
 		0BA7D32721275BC000F7B641 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA7D32621275BC000F7B641 /* AppDelegate.swift */; };
 		0BA7D32921275BC000F7B641 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA7D32821275BC000F7B641 /* ViewController.swift */; };
 		0BA7D32C21275BC000F7B641 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA7D32A21275BC000F7B641 /* Main.storyboard */; };
@@ -20,8 +22,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0B61B88F212AB4040017DF93 /* Card.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = Card.swift; path = SetGame/Card.swift; sourceTree = "<group>"; };
 		0B61B891212AB5A20017DF93 /* Grid.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Grid.swift; sourceTree = "<group>"; };
+		0B89486A2137013D00969024 /* UIDeck.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIDeck.swift; sourceTree = "<group>"; };
+		0B89486B2137013D00969024 /* UICardsHolder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UICardsHolder.swift; sourceTree = "<group>"; };
+		0B89486C2137013D00969024 /* UICard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UICard.swift; sourceTree = "<group>"; };
 		0BA7D32321275BBF00F7B641 /* SetGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SetGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BA7D32621275BC000F7B641 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0BA7D32821275BC000F7B641 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -45,10 +49,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0B8948692137013100969024 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				0B89486C2137013D00969024 /* UICard.swift */,
+				0B89486B2137013D00969024 /* UICardsHolder.swift */,
+				0B89486A2137013D00969024 /* UIDeck.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
 		0BA7D31A21275BBF00F7B641 = {
 			isa = PBXGroup;
 			children = (
-				0B61B88F212AB4040017DF93 /* Card.swift */,
 				0BA7D32521275BC000F7B641 /* SetGame */,
 				0BA7D32421275BBF00F7B641 /* Products */,
 			);
@@ -65,6 +78,7 @@
 		0BA7D32521275BC000F7B641 /* SetGame */ = {
 			isa = PBXGroup;
 			children = (
+				0B8948692137013100969024 /* UI */,
 				0B61B891212AB5A20017DF93 /* Grid.swift */,
 				0BA7D32621275BC000F7B641 /* AppDelegate.swift */,
 				0BA7D32821275BC000F7B641 /* ViewController.swift */,
@@ -151,12 +165,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				0BA7D33B212768B800F7B641 /* Extensions.swift in Sources */,
+				0B89486D2137013D00969024 /* UIDeck.swift in Sources */,
 				0BA7D33D2127857100F7B641 /* SymbolsEnumerations.swift in Sources */,
 				0BA7D32921275BC000F7B641 /* ViewController.swift in Sources */,
 				0BA7D3392127624600F7B641 /* SetGame.swift in Sources */,
-				0B61B890212AB4040017DF93 /* Card.swift in Sources */,
 				0B61B892212AB5A20017DF93 /* Grid.swift in Sources */,
+				0B89486F2137013D00969024 /* UICard.swift in Sources */,
 				0BA7D32721275BC000F7B641 /* AppDelegate.swift in Sources */,
+				0B89486E2137013D00969024 /* UICardsHolder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
