@@ -13,8 +13,9 @@ import UIKit
 class UICardsHolder: UIView {
 
     var grid: Grid!
-    var getCardPosition: ((UICard)->(Int))!
-    var getCardsList: (()->[UICard])!
+    var getCardPosition: ((UICard)->(Int))?
+    var getCardsList: (()->[UICard])?
+    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -29,8 +30,16 @@ class UICardsHolder: UIView {
     
     override func draw(_ rect: CGRect) {
         grid.frame = bounds
-        for card in getCardsList() {
-            card.frame = grid[getCardPosition(card)]!
+        if getCardsList != nil && getCardPosition != nil {
+            for card in getCardsList!() {
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.6,
+                    delay: 0,
+                    options: [.curveEaseInOut],
+                    animations: { [unowned self] in
+                        card.frame = self.grid[self.getCardPosition!(card)]!
+                })
+            }
         }
     }
     

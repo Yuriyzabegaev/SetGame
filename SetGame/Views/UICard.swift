@@ -109,10 +109,17 @@ extension UICard {
 class UICard: UIView {
     
     //MARK: Properties
-    var position: Int?
     var state: State = .notChosen {
         didSet {
-            setNeedsDisplay()
+            if oldValue != state {
+                setNeedsDisplay()
+                UIView.transition(with: self,
+                                  duration: 0.6,
+                                  options: [.transitionFlipFromLeft,
+                                            .allowUserInteraction],
+                                  animations: nil,
+                                  completion: nil)
+            }
         }
     }
     private(set) var amount: Amount = .one
@@ -133,6 +140,18 @@ class UICard: UIView {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setProperties()
+    }
+    
+    
+    func changeFigure(to cardData: (Amount, Symbol, Texture, Color)) {
+        (amount, symbol, texture, color) = cardData
+        setProperties()
+    }
+    
+    func changeFigure(like anotherCard: UICard) {
+        (amount, symbol, texture, color) = (anotherCard.amount, anotherCard.symbol, anotherCard.texture, anotherCard.color)
+        setProperties()
+        setNeedsDisplay()
     }
     
     
@@ -181,6 +200,10 @@ class UICard: UIView {
         isOpaque = false
         backgroundColor = .clear
         
+        for figure in figures {
+            figure.removeFromSuperview()
+        }
+        figures = []
         for _ in 0...amount.hashValue {
             let figure = Figure(symbol: symbol, texture: texture)
             figure.contentMode = .redraw

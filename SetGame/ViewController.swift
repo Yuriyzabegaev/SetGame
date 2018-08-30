@@ -16,11 +16,12 @@ extension ViewController {
             return cards.count
         }
         var iterator = 0
+        
         weak private var cardsHolder: UICardsHolder!
-        private(set) var queueToRemove: [UICard] = []
+        
         private(set) var cards:[Card] = []
         private(set) var uiCards:[UICard] = []
-        private var positionsOfCards = [Bool].init(repeating: false, count: 24)
+        var flyawayUICards:[UICard] = []
         typealias Element = (Card, UICard)
         
         init(cardsHolder: UICardsHolder) {
@@ -66,14 +67,17 @@ extension ViewController {
             uiCards.append(uiCard)
         }
         
+        func giveNotUsedUICard() -> UICard? {
+            if flyawayUICards.isEmpty { return nil }
+            return flyawayUICards.popLast()!
+        }
+        
         func remove(at index:Int) {
             if index >= cards.endIndex {
                 return
             }
             cards.remove(at: index)
-            let uiCardToRemove = uiCards[index]
             uiCards.remove(at: index)
-            uiCardToRemove.removeFromSuperview()
         }
         
         func remove(card: Card) {
@@ -89,22 +93,14 @@ extension ViewController {
         }
         
         func removeAll() {
-            for index in cards.indices.reversed() { remove(at: index) }
-            queueToRemove = []
-        }
-        
-        func addCardToRemoveQueue(_ card:UICard) {
-            queueToRemove += [card]
-        }
-        
-        func cleanCompletedCards() {
-            for uiCard in queueToRemove {
-                remove(uiCard: uiCard)
-                if let position = uiCard.position {
-                    positionsOfCards[position] = false
-                }
+            for card in uiCards {
+                card.removeFromSuperview()
             }
-            queueToRemove = []
+            for card in flyawayUICards {
+                card.removeFromSuperview()
+            }
+            for index in cards.indices.reversed() { remove(at: index) }
+            flyawayUICards = []
         }
         
         func getCard(at location:CGPoint) -> UICard? {
@@ -115,23 +111,7 @@ extension ViewController {
         }
         
         func getCardPosition(of card:UICard) -> Int {
-            
-            // Card has position
-            if let position = card.position {
-                return position
-            }
-            
-            // There is an empty position in array of positions
-            if let firstEmptyIndex = positionsOfCards.index(of: false) {
-                positionsOfCards[firstEmptyIndex] = true
-                card.position = firstEmptyIndex
-                return firstEmptyIndex
-            }
-            
-            // No empty positions => allocate new space in array
-            positionsOfCards.append(false)
-            card.position = positionsOfCards.endIndex - 1
-            return card.position!
+            return uiCards.index(of: card)!
         }
         
         func shuffleCardsPositions() {
@@ -145,12 +125,36 @@ extension ViewController {
 class ViewController: UIViewController {
 
     //MARK: Properties
+    private var queueToRemove: [UICard] = []
     private let game = SetGame()
-    lazy private var cardsStorage = ControllerCardsStorage(cardsHolder: self.cardsHolder)
     private var lastTimeRotated: Date?
+    lazy private var cardsStorage: ControllerCardsStorage = {
+        let storage = ControllerCardsStorage(cardsHolder: self.cardsHolder)
+        return storage
+    }()
     
+    lazy private var animator = UIDynamicAnimator(referenceView: self.view)
+    lazy private var cardBehavior = CardBehavior(in: animator)
+    lazy private var dynamicAnimationCards: [UICard] = {
+        var cards: [UICard] = []
+        for _ in 1...3 {
+            let card = UICard((UICard.Amount.one,
+                               UICard.Symbol.diamonds,
+                               UICard.Texture.filled,
+                               UICard.Color.green),
+                              frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+            card.alpha = 0
+            
+            cardsHolder.addSubview(card)
+            cardBehavior.addItem(card)
+            cards.append(card)
+        }
+        return cards
+    }()
+
     
     //MARK: Outlets
+    @IBOutlet weak var waste: UIDeck!
     @IBOutlet weak var deck: UIDeck!
     @IBOutlet weak var score: UILabel!
     @IBOutlet weak var cardsHolder: UICardsHolder! {
@@ -195,7 +199,7 @@ class ViewController: UIViewController {
     
     //MARK: Actions
     @IBAction func giveHint() {
-        cardsStorage.cleanCompletedCards()
+        cleanCompletedCards()
         updateGameUI()
         if game.setIsFound {
             for card in game.giveAHintSet()! {
@@ -208,14 +212,15 @@ class ViewController: UIViewController {
     }
     
     @IBAction func startNewGame() {
+        cleanup()
         game.startNewGame()
-        cardsStorage.removeAll()
         updateGameUI()
     }
     
     
     //MARK: Overrides
     override func viewDidLoad() {
+        super.viewDidLoad()
         startNewGame()
     }
     
@@ -224,8 +229,8 @@ class ViewController: UIViewController {
     private func updateGameUI() {
         
         /// if there are cards in a buffer to be hidden, open new cards in place of them
-        if !cardsStorage.queueToRemove.isEmpty {
-            cardsStorage.cleanCompletedCards()
+        if !queueToRemove.isEmpty {
+            cleanCompletedCards()
             game.openThreeNewCards()
         }
         
@@ -236,17 +241,14 @@ class ViewController: UIViewController {
             cardsHolder.grid.cellCount = countOfNotCompletedCardsOnTable
         }
         
-        /// update cardsKeep by new cards, added to table
-        for card in notCompletedCardsOnTable {
-            updatePosition(ofCard: card)
-        }
+        updatePositions()
         
         /// switch state of cards
         for (card, uiCard) in cardsStorage {
             switch card.state {
             case .isCompleted:
                 /// hide it from UI and remove from cardsOnTable in a next touch
-                cardsStorage.addCardToRemoveQueue(uiCard)
+                queueToRemove += [uiCard]
                 uiCard.state = .succeeded
             case .onTable:
                 uiCard.state = .notChosen
@@ -260,14 +262,56 @@ class ViewController: UIViewController {
         updateScore()
     }
     
-    private func updatePosition(ofCard card: Card) {
-        var uiCard = cardsStorage[card]
-        if uiCard == nil {
-            uiCard = UICard(getCardUIData(card), frame: deck.frame)
-            cardsStorage.add(card: card, uiCard: uiCard!)
-            cardsHolder.addSubview(uiCard!)
+    private func updatePositions() {
+        
+        /// filters all not completed cards on deck to two arrays to perform animations to update positions
+        var cardsToMaybeRearrange: [UICard] = []
+        var newCardsFromDeck: [UICard] = []
+        for card in game.cardsOnTable.filter({ $0.state != .isCompleted }) {
+            
+            var uiCard = cardsStorage[card]
+
+            if uiCard == nil {
+                uiCard = cardsStorage.giveNotUsedUICard()
+                if uiCard == nil {
+                    uiCard = UICard(getCardUIData(card), frame: deck.frame)
+                    cardsHolder.addSubview(uiCard!)
+                } else {
+                    uiCard!.changeFigure(to: getCardUIData(card))
+                }
+                cardsStorage.add(card: card, uiCard: uiCard!)
+                uiCard?.frame = deck.frame
+                
+                newCardsFromDeck += [uiCard!]
+            } else {
+                cardsToMaybeRearrange += [uiCard!]
+            }
+            
         }
-        uiCard!.frame = cardsHolder.grid[cardsStorage.getCardPosition(of: uiCard!)]!
+        
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.6,
+            delay: 0,
+            options: [.curveEaseInOut],
+            animations: { [unowned self] in
+                for uiCard in cardsToMaybeRearrange {
+                    uiCard.frame = self.cardsHolder.grid[self.cardsStorage.getCardPosition(of: uiCard)]!
+                }
+            },
+            completion: { [unowned self] position in
+                UIViewPropertyAnimator.runningPropertyAnimator(
+                    withDuration: 0.6,
+                    delay: 0,
+                    options: [.curveEaseInOut],
+                    animations: { [unowned self] in
+                        for uiCard in newCardsFromDeck {
+                            uiCard.alpha = 1
+                            uiCard.frame = self.cardsHolder.grid[self.cardsStorage.getCardPosition(of: uiCard)]!
+                        }
+                })
+        })
+    
+
     }
     
     private func updateScore() {
@@ -278,8 +322,46 @@ class ViewController: UIViewController {
         guard !game.isFinished else {
             return
         }
-        cardsStorage.cleanCompletedCards()
+        cleanCompletedCards()
         game.openThreeNewCards()
         updateGameUI()
+    }
+    
+    private func cleanCompletedCards() {
+        
+        if queueToRemove.isEmpty {
+            return
+        }
+        for (index, animationCard) in dynamicAnimationCards.enumerated() {
+            animationCard.changeFigure(like: queueToRemove[index])
+            animationCard.frame = queueToRemove[index].frame
+            animationCard.bounds = queueToRemove[index].bounds
+            animationCard.center = queueToRemove[index].center
+            animationCard.alpha = 1
+            queueToRemove[index].alpha = 0
+            cardsStorage.remove(uiCard: queueToRemove[index])
+            animator.updateItem(usingCurrentState: animationCard)
+            cardBehavior.push([animationCard], direction: waste.frame)
+        }
+        cardsStorage.flyawayUICards += queueToRemove
+        queueToRemove = []
+    }
+    
+    private func hideUICards(_ cards: [UICard]) {
+        UIViewPropertyAnimator.runningPropertyAnimator(
+            withDuration: 0.6,
+            delay: 0,
+            options: [.curveEaseIn],
+            animations: {
+                for uiCard in cards {
+                    uiCard.alpha = 0
+                }
+        })
+    }
+    
+    private func cleanup() {
+        cleanCompletedCards()
+        hideUICards(cardsStorage.uiCards)
+        cardsStorage.removeAll()
     }
 }

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 
 extension MutableCollection {
@@ -67,5 +68,14 @@ extension UICard {
         case green
         case red
         case purple
+    }
+}
+
+
+extension Double {
+    var arc4random: Double {
+        let random = arc4random_uniform(UInt32.max)
+        let res = Double(random) / Double(UInt32.max)
+        return res*self
     }
 }
