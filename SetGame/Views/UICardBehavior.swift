@@ -51,8 +51,6 @@ class CardBehavior: UIDynamicBehavior {
     
     func push(_ items: [UIDynamicItem], direction: CGRect) {
         guard !items.isEmpty else { return }
-//        itemBehavior.allowsRotation = true
-//        dynamicAnimator?.beh
         
         let push = UIPushBehavior(items: items, mode: .instantaneous)
         push.angle = CGFloat((2*Double.pi).arc4random)
@@ -60,7 +58,7 @@ class CardBehavior: UIDynamicBehavior {
         push.action = { [weak push, weak self] in
             self?.removeChildBehavior(push!)
             let strongPush = push!
-            _ = Timer.scheduledTimer(withTimeInterval: 1, repeats: false) { [weak self] timer in
+            _ = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: false) { [weak self] timer in
                 self?.getToWaste(strongPush.items, direction: direction)
                 for item in items {
                     let linearV = self!.itemBehavior.linearVelocity(for: item)
@@ -73,7 +71,6 @@ class CardBehavior: UIDynamicBehavior {
     }
     
     private func getToWaste(_ items: [UIDynamicItem], direction: CGRect) {
-//        itemBehavior.allowsRotation = false
 
         for item in items {
             let view = item as! UIView
@@ -81,8 +78,6 @@ class CardBehavior: UIDynamicBehavior {
             push.pushDirection = CGVector(dx:direction.midX - view.frame.midX , dy: direction.midY - view.frame.midY)
             push.magnitude = 1 + CGFloat(0.5.arc4random)
             push.action = { [unowned push, weak self] in
-//                push.magnitude = push.magnitude / 10
-//                push.pushDirection = CGVector(dx:direction.midX - view.frame.midX , dy: direction.midY - view.frame.midY)
                 if direction.intersects(view.frame) {
                     self?.removeChildBehavior(push)
                     UIViewPropertyAnimator.runningPropertyAnimator(

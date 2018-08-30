@@ -151,6 +151,9 @@ class SetGame {
     var cardsOnTable: Set<Card> {
         return cardKeep.table
     }
+    var cardsInDeckCount: Int {
+        return cardKeep.deck.count
+    }
     var score: Int = 0 {
         didSet {
             score = score < 0 ? 0 : score
@@ -193,7 +196,6 @@ class SetGame {
         if cardKeep.chosenCards.count == 3 {
             handleThreeOpenCardsSituation()
         }
-        
         findSet()
     }
     

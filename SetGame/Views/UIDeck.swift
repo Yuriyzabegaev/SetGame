@@ -15,14 +15,16 @@ class UIDeck: UIView {
     
     var cardsInDeck: Int = 0 {
         didSet {
-            if cardInDeckLabel != nil {
-                cardInDeckLabel.text = String(cardsInDeck)
+            if cardsInDeckLabel != nil {
+                cardsInDeckLabel.text = String(cardsInDeck)
             }
         }
     }
     
-    private var cardInDeckLabel: UILabel!
     
+    private var cardsInDeckLabel: UILabel!
+    
+
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         setupProps()
@@ -32,13 +34,18 @@ class UIDeck: UIView {
         setupProps()
     }
     
+    
+    func updateCardsInDeckLabel(with amount:Int) {
+        cardsInDeckLabel.text = "\(amount)"
+    }
+    
     private func setupProps() {
         isOpaque = false
         backgroundColor = .clear
         contentMode = .redraw
-        cardInDeckLabel = UILabel()
-        cardInDeckLabel.textAlignment = .center
-        self.addSubview(cardInDeckLabel)
+        cardsInDeckLabel = UILabel()
+        cardsInDeckLabel.textAlignment = .center
+        self.addSubview(cardsInDeckLabel)
     }
     
     override func draw(_ rect: CGRect) {
@@ -50,7 +57,7 @@ class UIDeck: UIView {
         UIColor.white.setFill()
         roundedRect.fill()
         
-        cardInDeckLabel.frame = self.bounds
+        cardsInDeckLabel.frame = self.bounds
     }
     
     private var cornerRadius: CGFloat {

@@ -32,6 +32,9 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <gestureRecognizers/>
+                                <connections>
+                                    <outletCollection property="gestureRecognizers" destination="gKa-iE-9WK" appends="YES" id="v5b-45-17h"/>
+                                </connections>
                             </view>
                             <view opaque="NO" clearsContextBeforeDrawing="NO" contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="bjL-nL-W0S" customClass="UICardsHolder" customModule="SetGame" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="20" width="320" height="392"/>
@@ -86,9 +89,9 @@
                         <action selector="rotation:" destination="BYZ-38-t0r" id="SWf-wp-8RR"/>
                     </connections>
                 </rotationGestureRecognizer>
-                <tapGestureRecognizer id="0Ft-I7-Xdh">
+                <tapGestureRecognizer id="gKa-iE-9WK">
                     <connections>
-                        <action selector="tapOnDeck:" destination="BYZ-38-t0r" id="gpS-bz-szL"/>
+                        <action selector="tapOnDeck:" destination="BYZ-38-t0r" id="CjS-zt-jgw"/>
                     </connections>
                 </tapGestureRecognizer>
             </objects>

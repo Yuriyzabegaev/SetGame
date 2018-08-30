@@ -115,7 +115,15 @@ extension ViewController {
         }
         
         func shuffleCardsPositions() {
-            fatalError("Not implemented")
+            let indeces = [Int](cards.indices).shuffled()
+            var newUICards: [UICard] = []
+            var newCards: [Card] = []
+            for newIndex in indeces {
+                newCards.append(cards[newIndex])
+                newUICards.append(uiCards[newIndex])
+            }
+            cards = newCards
+            uiCards = newUICards
         }
         
     }
@@ -127,12 +135,11 @@ class ViewController: UIViewController {
     //MARK: Properties
     private var queueToRemove: [UICard] = []
     private let game = SetGame()
-    private var lastTimeRotated: Date?
     lazy private var cardsStorage: ControllerCardsStorage = {
         let storage = ControllerCardsStorage(cardsHolder: self.cardsHolder)
         return storage
     }()
-    
+
     lazy private var animator = UIDynamicAnimator(referenceView: self.view)
     lazy private var cardBehavior = CardBehavior(in: animator)
     lazy private var dynamicAnimationCards: [UICard] = {
@@ -175,15 +182,18 @@ class ViewController: UIViewController {
     //MARK: Gesture handlers
     @IBAction func rotation(_ sender: UIRotationGestureRecognizer) {
         guard !game.isFinished else { return }
-        let currentTime = Date()
-        if let lastTimeRotated = lastTimeRotated {
-            if currentTime.timeIntervalSince(lastTimeRotated) > 2 {
-                cardsStorage.shuffleCardsPositions()
-                self.lastTimeRotated = currentTime
-            }
-        } else {
-            lastTimeRotated = currentTime
+
+        switch sender.state {
+        case .ended:
+            cardsStorage.shuffleCardsPositions()
+            updateGameUI()
+        default: break
         }
+        
+    }
+    
+    @IBAction func tapOnDeck(_ sender: UITapGestureRecognizer) {
+        openThreeMoreCards()
     }
     
     @objc func swipeDownGesture() { openThreeMoreCards() }
@@ -260,6 +270,15 @@ class ViewController: UIViewController {
         }
         
         updateScore()
+        
+        if game.haveSetChosen {
+            Timer.scheduledTimer(withTimeInterval: 1.2, repeats: false, block: { [unowned self] timer in
+                if !self.queueToRemove.isEmpty {
+                    self.game.chooseCard(self.cardsStorage[self.queueToRemove[0]]!)
+                    self.updateGameUI()
+                }
+            })
+        }
     }
     
     private func updatePositions() {
@@ -310,11 +329,10 @@ class ViewController: UIViewController {
                         }
                 })
         })
-    
-
     }
     
     private func updateScore() {
+        deck.updateCardsInDeckLabel(with: game.cardsInDeckCount)
         score.text = "Score: \(game.score)"
     }
     
